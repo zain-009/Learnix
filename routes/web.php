@@ -83,3 +83,7 @@ Route::post('/uploadQuiz', [QuizController::class, 'uploadQuiz']);
 Route::post('/deleteQuiz', [QuizController::class, 'deleteQuiz']);
 
 Route::post('/updateCredentials', [UserController::class, 'updateCredentials']);
+
+Route::post('/submitAssignment', [AssignmentController::class, 'submitAssignment']);
+
+Route::post('/submitQuiz', [QuizController::class, 'submitQuiz']);

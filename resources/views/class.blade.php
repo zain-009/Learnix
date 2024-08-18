@@ -357,7 +357,7 @@
                                     <div class="flex justify-between items-center">
                                         <div class="flex gap-x-4 items-center">
                                             <i class="fa-regular fa-folder-open text-2xl"></i>
-                                            <span>Study Material</span>
+                                            <span>Material</span>
                                         </div>
                                         <span>{{ $material->created_at->format('d M') }}</span>
                                     </div>
@@ -390,16 +390,28 @@
                         </ul>
                         <ul class="mb-5 w-full flex justify-center">
                             @foreach ($assignments as $assignment)
+                                @php
+                                    $submission = \App\Models\AssignmentSubmissions::where(
+                                        'assignment_id',
+                                        $assignment->id,
+                                    )
+                                        ->where('user_id', auth()->user()->id)
+                                        ->first();
+                                @endphp
                                 <div class=" p-4 w-96 bg-gray-800 rounded-xl">
                                     <div class="flex justify-between items-center pb-3">
                                         <div class="flex gap-x-4 items-center">
                                             <i class="fa-regular fa-file-lines text-2xl"></i>
                                             <span>Assignment</span>
                                         </div>
-                                        <div class="flex flex-col md:flex-row gap-x-1">
-                                            <span class="text-center">Due</span>
-                                            <span>{{ \Carbon\Carbon::parse($assignment->created_at)->addDays($assignment->duration)->format('d M, h:i A') }}</span>
-                                        </div>
+                                        @if ($submission->submitted == true)
+                                            <span class="text-green-300">Submitted</span>
+                                        @else
+                                            <div class="flex flex-col md:flex-row gap-x-1">
+                                                <span class="text-center">Due</span>
+                                                <span>{{ \Carbon\Carbon::parse($assignment->created_at)->addDays($assignment->duration)->format('d M, h:i A') }}</span>
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="flex flex-col">
                                         <div class="flex items-center justify-between">
@@ -409,11 +421,60 @@
                                             <div uk-dropdown="mode: click" class="bg-gray-600 text-white p-0">
                                                 <ul>
                                                     <li class=" hover:bg-slate-700 flex justify-center cursor-pointer">
+                                                        @if (!$submission->submitted == true)
+                                                            <Button uk-toggle="target: #submitAssignment" type="button"
+                                                                class=" hover:no-underline hover:text-white p-3 w-full text-center">Submit</Button>
+                                                        @endif
+                                                        <div id="submitAssignment" uk-modal>
+                                                            <div
+                                                                class="uk-modal-dialog uk-modal-body rounded-lg p-0 bg-gray-800 border border-indigo-500">
+                                                                <div
+                                                                    class="flex justify-between items-center bg-gray-700 py-3 px-5 rounded-t-lg border-b border-indigo-500">
+                                                                    <div class="flex gap-x-3 items-center">
+                                                                        <i class="fa-regular fa-file-lines text-2xl"></i>
+                                                                        <span class="text-2xl">Submit Assignment</span>
+                                                                    </div>
+                                                                    <i
+                                                                        class="fa fa-x uk-modal-close cursor-pointer px-[12px] py-[10px] rounded-full hover:bg-gray-800"></i>
+                                                                </div>
+                                                                <div class="flex flex-col gap-y-3 mx-5">
+                                                                    <form class="flex flex-col gap-y-5"
+                                                                        action="/submitAssignment" method="POST"
+                                                                        enctype="multipart/form-data">
+                                                                        @csrf
+                                                                        <div>
+                                                                            <input type="text"
+                                                                                value="{{ $assignment->id }}" hidden
+                                                                                name="assignmentId" id="assignmentId">
+                                                                        </div>
+                                                                        <div
+                                                                            class="flex items-center justify-between mb-5">
+                                                                            <input class="w-64" type="file"
+                                                                                name="file" id="file" required>
+                                                                            <button type="submit"
+                                                                                class="bg-indigo-700 py-2 px-4 rounded-lg hover:bg-indigo-900">Submit</button>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                    <li class=" hover:bg-slate-700 flex justify-center cursor-pointer">
                                                         <a class=" hover:no-underline hover:text-white p-3 w-full text-center"
                                                             download
                                                             href="{{ Storage::url($assignment->file) }}">Download</a>
                                                     </li>
                                                     @if (auth()->user()->id == $class->teacherId)
+                                                        <li class=" hover:bg-slate-700 flex justify-center cursor-pointer">
+                                                            <form action="/submissions" method="get">
+                                                                <input type="text" value="quiz" hidden
+                                                                    name="type" id="type">
+                                                                <input type="text" value="{{ $assignment->id }}"
+                                                                    hidden name="assignmentId" id="assignmentId">
+                                                                <Button
+                                                                    class=" hover:no-underline hover:text-white p-3 w-full text-center">Submissions</Button>
+                                                            </form>
+                                                        </li>
                                                         <li
                                                             class="p-0 hover:bg-slate-700 flex justify-center cursor-pointer">
                                                             <form action="/deleteAssignment" method="post"
@@ -441,31 +502,40 @@
                         </ul>
                         <ul class="mb-24 w-full flex justify-center">
                             @foreach ($quizzes as $quiz)
+                                @php
+                                    $submission = \App\Models\QuizSubmissions::where('quiz_id', $quiz->id)
+                                        ->where('user_id', auth()->user()->id)
+                                        ->first();
+                                @endphp
                                 <div class=" p-4 w-96 bg-gray-800 rounded-xl">
                                     <div class="flex justify-between items-center pb-3">
                                         <div class="flex gap-x-4 items-center">
                                             <i class="fa-regular fa-file-code text-2xl"></i>
                                             <span>Quiz</span>
                                         </div>
-                                        <div class="flex flex-col">
-                                            <span class="text-center">Remaining</span>
-                                            <span class="text-center">
-                                                @php
-                                                    $dueTime = \Carbon\Carbon::parse($quiz->created_at)->addMinutes(
-                                                        $quiz->duration * 60,
-                                                    );
-                                                    $remainingTime = floor(
-                                                        \Carbon\Carbon::now()->diffInMinutes($dueTime, false),
-                                                    );
-                                                @endphp
+                                        @if ($submission->submitted == true)
+                                            <span class="text-green-300">Submitted</span>
+                                        @else
+                                            <div class="flex flex-col">
+                                                <span class="text-center">Remaining</span>
+                                                <span class="text-center">
+                                                    @php
+                                                        $dueTime = \Carbon\Carbon::parse($quiz->created_at)->addMinutes(
+                                                            $quiz->duration * 60,
+                                                        );
+                                                        $remainingTime = floor(
+                                                            \Carbon\Carbon::now()->diffInMinutes($dueTime, false),
+                                                        );
+                                                    @endphp
 
-                                                @if ($remainingTime > 0)
-                                                    {{ $remainingTime }} min
-                                                @else
-                                                    Time's up
-                                                @endif
-                                            </span>
-                                        </div>
+                                                    @if ($remainingTime > 0)
+                                                        {{ $remainingTime }} min
+                                                    @else
+                                                        Time's up
+                                                    @endif
+                                                </span>
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="flex flex-col">
                                         <div class="flex items-center justify-between">
@@ -475,10 +545,59 @@
                                             <div uk-dropdown="mode: click" class="bg-gray-600 text-white p-0">
                                                 <ul>
                                                     <li class=" hover:bg-slate-700 flex justify-center cursor-pointer">
+                                                        @if (!$submission->submitted == true)
+                                                            <Button uk-toggle="target: #submitQuiz" type="button"
+                                                                class=" hover:no-underline hover:text-white p-3 w-full text-center">Submit</Button>
+                                                        @endif
+                                                        <div id="submitQuiz" uk-modal>
+                                                            <div
+                                                                class="uk-modal-dialog uk-modal-body rounded-lg p-0 bg-gray-800 border border-indigo-500">
+                                                                <div
+                                                                    class="flex justify-between items-center bg-gray-700 py-3 px-5 rounded-t-lg border-b border-indigo-500">
+                                                                    <div class="flex gap-x-3 items-center">
+                                                                        <i class="fa-regular fa-file-code text-2xl"></i>
+                                                                        <span class="text-2xl">Submit Quiz</span>
+                                                                    </div>
+                                                                    <i
+                                                                        class="fa fa-x uk-modal-close cursor-pointer px-[12px] py-[10px] rounded-full hover:bg-gray-800"></i>
+                                                                </div>
+                                                                <div class="flex flex-col gap-y-3 mx-5">
+                                                                    <form class="flex flex-col gap-y-5"
+                                                                        action="/submitQuiz" method="POST"
+                                                                        enctype="multipart/form-data">
+                                                                        @csrf
+                                                                        <div>
+                                                                            <input type="text"
+                                                                                value="{{ $quiz->id }}" hidden
+                                                                                name="quizId" id="quizId">
+                                                                        </div>
+                                                                        <div
+                                                                            class="flex items-center justify-between mb-5">
+                                                                            <input class="w-64" type="file"
+                                                                                name="file" id="file" required>
+                                                                            <button type="submit"
+                                                                                class="bg-indigo-700 py-2 px-4 rounded-lg hover:bg-indigo-900">Submit</button>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                    <li class=" hover:bg-slate-700 flex justify-center cursor-pointer">
                                                         <a class=" hover:no-underline hover:text-white p-3 w-full text-center"
                                                             download href="{{ Storage::url($quiz->file) }}">Download</a>
                                                     </li>
                                                     @if (auth()->user()->id == $class->teacherId)
+                                                        <li class=" hover:bg-slate-700 flex justify-center cursor-pointer">
+                                                            <form action="/submissions" method="get">
+                                                                <input type="text" value="quiz" hidden
+                                                                    name="type" id="type">
+                                                                <input type="text" value="{{ $quiz->id }}" hidden
+                                                                    name="quizId" id="quizId">
+                                                                <Button
+                                                                    class=" hover:no-underline hover:text-white p-3 w-full text-center">Submissions</Button>
+                                                            </form>
+                                                        </li>
                                                         <li
                                                             class="p-0 hover:bg-slate-700 flex justify-center cursor-pointer">
                                                             <form action="/deletequiz" method="post"
