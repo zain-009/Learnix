@@ -19,7 +19,7 @@
                 @endphp
                 <a href='/class/{{ $class->classCode }}'
                     class="hover:no-underline hover:text-current hover:shadow-xl hover:shadow-indigo-900 hover:-translate-y-2 duration-200  rounded-lg border-indigo-500 border overflow-hidden transition-all">
-                    <div class="flex flex-col h-96">
+                    <div class="flex flex-col h-72">
                         <div
                             class="bg-gradient-to-r {{ $gradient }} p-5 flex flex-col gap-y-2 border-indigo-500 border-b text-sm">
                             <span class='text-lg font-medium'>{{ $class->className }}</span>
