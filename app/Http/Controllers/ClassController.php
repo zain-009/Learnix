@@ -65,11 +65,17 @@ class ClassController extends Controller
     public function leaveClass(Request $request)
     {
         $user = Auth::user();
-        if ($user) {
-            $relation = ClassUser::where('user_id', $user->id)
-                ->where('class_id', $request->input('classId'))
-                ->first();
-            $relation->delete();
+        $class = ClassModel::where('id', $request->input('classId'))->first();
+        if ($class->teacherId == $user->id) {
+            $class->status = 'inActive';
+            $class->save();
+        } else {
+            if ($user) {
+                $relation = ClassUser::where('user_id', $user->id)
+                    ->where('class_id', $request->input('classId'))
+                    ->first();
+                $relation->delete();
+            }
         }
         return redirect('/home');
     }

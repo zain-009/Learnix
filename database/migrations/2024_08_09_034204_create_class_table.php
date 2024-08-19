@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('classCode');
             $table->string('teacherName');
             $table->bigInteger('teacherId');
+            $table->string('status')->default('active');
             $table->timestamps();
         });
     }

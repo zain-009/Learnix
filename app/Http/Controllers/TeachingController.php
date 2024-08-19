@@ -12,7 +12,7 @@ class TeachingController extends Controller
     public function showTeaching()
     {
         $user = Auth::user();
-        $teaching = ClassModel::where('teacherId',$user->id)->get();
+        $teaching = ClassModel::where('teacherId',$user->id)->where('status', 'active')->get();
         return view('teaching',['teaching' => $teaching]);
     }
 }

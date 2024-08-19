@@ -12,7 +12,7 @@ class HomeController extends Controller
     public function showHome()
     {
         $user = Auth::user();
-        $teaching = ClassModel::where('teacherId',$user->id)->get();
+        $teaching = ClassModel::where('teacherId',$user->id)->where('status', 'active')->get();
         $enrolled = Auth::user()->classes;
         return view('home',['teaching' => $teaching, 'enrolled' => $enrolled]);
     }

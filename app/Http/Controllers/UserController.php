@@ -9,7 +9,7 @@ class UserController extends Controller
 {
     public function updateCredentials(Request $request){
         $request->validate([
-            'name' => 'required|min:6',
+            'name' => 'required',
             'email' => 'required|email'
         ]);
 
