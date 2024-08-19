@@ -62,10 +62,13 @@ class ClassController extends Controller
         }
     }
 
-    public function leaveClass(Request $request) {
+    public function leaveClass(Request $request)
+    {
         $user = Auth::user();
         if ($user) {
-            $relation = ClassUser::where('user_id',$user->id)->where('class_id', $request->input('classId'))->first();
+            $relation = ClassUser::where('user_id', $user->id)
+                ->where('class_id', $request->input('classId'))
+                ->first();
             $relation->delete();
         }
         return redirect('/home');
@@ -79,10 +82,20 @@ class ClassController extends Controller
         $teacherImage = $teacher ? $teacher->image : null;
         $users = $class->users;
 
-        $announcements = Announcment::where('class_id', $class->id)->orderByDesc('created_at')->get();
-        $materials = Material::where('class_id', $class->id)->orderByDesc('created_at')->get();
-        $assignments = Assignment::where('class_id', $class->id)->orderByDesc('created_at')->get();
-        $quizzes = Quiz::where('class_id', $class->id)->orderByDesc('created_at')->get();
+        $announcements = Announcment::where('class_id', $class->id)
+            ->orderByDesc('created_at')
+            ->get();
+        $materials = Material::where('class_id', $class->id)
+            ->orderByDesc('created_at')
+            ->get();
+        $assignments = Assignment::where('class_id', $class->id)
+            ->orderByDesc('created_at')
+            ->get();
+        $quizzes = Quiz::where('class_id', $class->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $mergedItems = $announcements->merge($materials)->merge($assignments)->merge($quizzes)->sortByDesc('created_at');
 
         return view('class', [
             'class' => $class,
@@ -92,11 +105,13 @@ class ClassController extends Controller
             'materials' => $materials,
             'assignments' => $assignments,
             'quizzes' => $quizzes,
+            'mergedItems' => $mergedItems,
         ]);
     }
-    public function postAnnouncement(Request $request){
+    public function postAnnouncement(Request $request)
+    {
         $request->validate([
-            'announcement' => 'required'
+            'announcement' => 'required',
         ]);
         $accouncement = new Announcment();
         $accouncement->announcement = $request->input('announcement');
@@ -105,7 +120,8 @@ class ClassController extends Controller
         return redirect()->back();
     }
 
-    public function deleteAnnouncement(Request $request){
+    public function deleteAnnouncement(Request $request)
+    {
         $accouncementId = $request->input('announcementId');
         $accouncement = Announcment::where('id', $accouncementId)->first();
         $accouncement->delete();

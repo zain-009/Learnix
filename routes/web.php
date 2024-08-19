@@ -5,6 +5,7 @@ use App\Http\Controllers\ClassController;
 use App\Http\Controllers\ImageController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\QuizController;
+use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
@@ -87,3 +88,5 @@ Route::post('/updateCredentials', [UserController::class, 'updateCredentials']);
 Route::post('/submitAssignment', [AssignmentController::class, 'submitAssignment']);
 
 Route::post('/submitQuiz', [QuizController::class, 'submitQuiz']);
+
+Route::get('/submissions',[SubmissionController::class,'submissions']);

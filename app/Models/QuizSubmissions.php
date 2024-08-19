@@ -12,4 +12,9 @@ class QuizSubmissions extends Model
     public $table = 'quiz_submissions';
 
     public $fillable = ['quiz_id', 'turn_in_time', 'file'];
+
+    public function user() {
+        return $this->belongsTo(User::class);
+    }
+    
 }

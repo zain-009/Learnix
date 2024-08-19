@@ -61,8 +61,8 @@
                     <div class='grid grid-cols-12 gap-x-5 gap-y-5'>
                         <div class="col-span-12 sm:col-span-4 lg:col-span-3 xl:col-span-2 gap-y-1">
                             <div
-                                class="bg-gray-800 px-10 py-4 sm:px-6 rounded-lg border border-indigo-500 h-min flex flex-row sm:flex-col justify-between">
-                                <span class='whitespace-nowrap'>Class Code</span>
+                                class="bg-gray-800 px-10 lg:px-3 py-4 sm:px-6 rounded-lg border border-indigo-500 h-min flex flex-row sm:flex-col justify-between">
+                                <span class='whitespace-nowrap lg:mr-5'>Class Code</span>
                                 <span
                                     class="text-blue-500 text-lg font-medium cursor-pointer transition-transform duration-200"
                                     x-data="{
@@ -351,9 +351,9 @@
                     @endif
                 @else
                     <div class="grid grid-cols-1 mx-auto mt-5">
-                        <ul class="mb-5 w-full flex justify-center">
+                        <ul class="mb-5 w-full justify-center flex flex-col items-center gap-y-5">
                             @foreach ($materials as $material)
-                                <div class=" p-4 w-96 bg-gray-800 rounded-xl">
+                                <div class=" p-4 w-72 sm:w-80 md:w-96 bg-gray-800 rounded-xl">
                                     <div class="flex justify-between items-center">
                                         <div class="flex gap-x-4 items-center">
                                             <i class="fa-regular fa-folder-open text-2xl"></i>
@@ -388,7 +388,7 @@
                                 </div>
                             @endforeach
                         </ul>
-                        <ul class="mb-5 w-full flex justify-center">
+                        <ul class="mb-5 w-full justify-center flex flex-col items-center gap-y-5">
                             @foreach ($assignments as $assignment)
                                 @php
                                     $submission = \App\Models\AssignmentSubmissions::where(
@@ -398,13 +398,13 @@
                                         ->where('user_id', auth()->user()->id)
                                         ->first();
                                 @endphp
-                                <div class=" p-4 w-96 bg-gray-800 rounded-xl">
+                                <div class=" p-4 w-72 sm:w-80 md:w-96 bg-gray-800 rounded-xl">
                                     <div class="flex justify-between items-center pb-3">
                                         <div class="flex gap-x-4 items-center">
                                             <i class="fa-regular fa-file-lines text-2xl"></i>
                                             <span>Assignment</span>
                                         </div>
-                                        @if ($submission->submitted == true)
+                                        @if ($submission)
                                             <span class="text-green-300">Submitted</span>
                                         @else
                                             <div class="flex flex-col md:flex-row gap-x-1">
@@ -421,7 +421,7 @@
                                             <div uk-dropdown="mode: click" class="bg-gray-600 text-white p-0">
                                                 <ul>
                                                     <li class=" hover:bg-slate-700 flex justify-center cursor-pointer">
-                                                        @if (!$submission->submitted == true)
+                                                        @if (!$submission && auth()->user()->id != $class->teacherId)
                                                             <Button uk-toggle="target: #submitAssignment" type="button"
                                                                 class=" hover:no-underline hover:text-white p-3 w-full text-center">Submit</Button>
                                                         @endif
@@ -467,10 +467,12 @@
                                                     @if (auth()->user()->id == $class->teacherId)
                                                         <li class=" hover:bg-slate-700 flex justify-center cursor-pointer">
                                                             <form action="/submissions" method="get">
-                                                                <input type="text" value="quiz" hidden
+                                                                <input type="text" value="{{ $class->id }}" hidden
+                                                                    name="classId" id="classId">
+                                                                <input type="text" value="assignment" hidden
                                                                     name="type" id="type">
                                                                 <input type="text" value="{{ $assignment->id }}"
-                                                                    hidden name="assignmentId" id="assignmentId">
+                                                                    hidden name="id" id="id">
                                                                 <Button
                                                                     class=" hover:no-underline hover:text-white p-3 w-full text-center">Submissions</Button>
                                                             </form>
@@ -500,20 +502,20 @@
                                 </div>
                             @endforeach
                         </ul>
-                        <ul class="mb-24 w-full flex justify-center">
+                        <ul class="mb-24 w-full justify-center flex flex-col items-center gap-y-5">
                             @foreach ($quizzes as $quiz)
                                 @php
                                     $submission = \App\Models\QuizSubmissions::where('quiz_id', $quiz->id)
                                         ->where('user_id', auth()->user()->id)
                                         ->first();
                                 @endphp
-                                <div class=" p-4 w-96 bg-gray-800 rounded-xl">
+                                <div class=" p-4 w-72 sm:w-80 md:w-96 bg-gray-800 rounded-xl">
                                     <div class="flex justify-between items-center pb-3">
                                         <div class="flex gap-x-4 items-center">
                                             <i class="fa-regular fa-file-code text-2xl"></i>
                                             <span>Quiz</span>
                                         </div>
-                                        @if ($submission->submitted == true)
+                                        @if ($submission)
                                             <span class="text-green-300">Submitted</span>
                                         @else
                                             <div class="flex flex-col">
@@ -545,7 +547,7 @@
                                             <div uk-dropdown="mode: click" class="bg-gray-600 text-white p-0">
                                                 <ul>
                                                     <li class=" hover:bg-slate-700 flex justify-center cursor-pointer">
-                                                        @if (!$submission->submitted == true)
+                                                        @if (!$submission && auth()->user()->id != $class->teacherId)
                                                             <Button uk-toggle="target: #submitQuiz" type="button"
                                                                 class=" hover:no-underline hover:text-white p-3 w-full text-center">Submit</Button>
                                                         @endif
@@ -590,10 +592,12 @@
                                                     @if (auth()->user()->id == $class->teacherId)
                                                         <li class=" hover:bg-slate-700 flex justify-center cursor-pointer">
                                                             <form action="/submissions" method="get">
+                                                                <input type="text" value="{{ $class->id }}" hidden
+                                                                    name="classId" id="classId">
                                                                 <input type="text" value="quiz" hidden
                                                                     name="type" id="type">
                                                                 <input type="text" value="{{ $quiz->id }}" hidden
-                                                                    name="quizId" id="quizId">
+                                                                    name="id" id="id">
                                                                 <Button
                                                                     class=" hover:no-underline hover:text-white p-3 w-full text-center">Submissions</Button>
                                                             </form>

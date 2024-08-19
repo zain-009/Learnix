@@ -12,4 +12,9 @@ class AssignmentSubmissions extends Model
     public $table = 'assignment_submissions';
 
     public $fillable = ['assignment_id', 'turn_in_time', 'file'];
+
+    public function user() {
+        return $this->belongsTo(User::class);
+    }
+    
 }
